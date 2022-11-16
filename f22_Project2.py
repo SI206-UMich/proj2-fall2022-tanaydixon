@@ -30,7 +30,7 @@ def get_listings_from_search_results(html_file):
     with open(full_path, 'r') as f:
         content = f.read()
         soup = BeautifulSoup(content,'html.parser')
-        
+
     titles = soup.find_all('div', class_="t1jojoys dir dir-ltr")
     #gives a list of tags that were searching for 
     #something that will be the same for all 20 searches
@@ -44,7 +44,7 @@ def get_listings_from_search_results(html_file):
     for item in titles: 
         title=titles[position].text
         cost= int(costs[position].text.lstrip("$"))
-        #strip left $ 
+        #strip left 
         id= titles[position]["id"].lstrip("title_")
         t = (title,cost,id)
         L.append(t)
@@ -79,11 +79,6 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
-    # html_file = 'html_files/listing_" + listing_id + ".html'
-    # file = open(html_file, "r")
-    # r = file.read()
-    # soup = BeautifulSoup(r.content, "html.parser")
-    # file.close()
     source_dir = os.path.dirname(__file__)
     full_path = os.path.join(source_dir, f"html_files/listing_{listing_id}.html")
     f=  open(full_path, 'r')
