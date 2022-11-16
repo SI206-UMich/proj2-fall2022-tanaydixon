@@ -30,15 +30,7 @@ def get_listings_from_search_results(html_file):
     with open(full_path, 'r') as f:
         content = f.read()
         soup = BeautifulSoup(content,'html.parser')
-
-    # file = open(html_file, "r")
-    # r = file.read()
-    # soup = BeautifulSoup(r.content, "html.parser")
-    # file.close()
-    #the contents of page stored as soup 
-
-    #title = soup.find_all('div', attrs = {'class':'t1jojoys dir dir-ltr'})
-
+        
     titles = soup.find_all('div', class_="t1jojoys dir dir-ltr")
     #gives a list of tags that were searching for 
     #something that will be the same for all 20 searches
