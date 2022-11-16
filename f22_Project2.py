@@ -231,14 +231,13 @@ def extra_credit(listing_id):
 
         reviews = soup.find_all('li', class_='_1f1oir5')
 
-        #count each year and add number of reviews to a dictionary
         count_dic = {}
-        for i in reviews: 
-            if i.text[-4:] in count_dic: 
-                count_dic[i.text[-4:]] += 1
+        for review in reviews: 
+            if review.text[-4:] in count_dic: 
+                count_dic[review.text[-4:]] += 1
             else: 
-                count_dic[i.text[-4:]] = 1
-        #run through the values in dic and see if one is greater than 90
+                count_dic[review.text[-4:]] = 1
+
         for year in count_dic.items():
             if year[1] > 90:
                 return False 
@@ -260,7 +259,7 @@ class TestCases(unittest.TestCase):
         # check that the first title, cost, and listing id tuple is correct (open the search results html and find it)
 
         # check that the last title is correct (open the search results html and find it)
-        pass
+        
 
     def test_get_listing_information(self):
         html_list = ["1623609",
@@ -288,7 +287,7 @@ class TestCases(unittest.TestCase):
 
         # check that the third listing has one bedroom
 
-        pass
+       
 
     def test_get_detailed_listing_database(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
@@ -307,7 +306,7 @@ class TestCases(unittest.TestCase):
         # check that the last tuple is made up of the following:
         # 'Guest suite in Mission District', 238, '32871760', 'STR-0004707', 'Entire Room', 1
 
-        pass
+     
 
     def test_write_csv(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
@@ -329,7 +328,7 @@ class TestCases(unittest.TestCase):
 
         # check that the last row is Apartment in Mission District,399,28668414,Pending,Entire Room,2
 
-        pass
+        
 
     def test_check_policy_numbers(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
