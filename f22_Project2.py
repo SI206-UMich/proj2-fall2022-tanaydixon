@@ -25,7 +25,42 @@ def get_listings_from_search_results(html_file):
         ('Loft in Mission District', 210, '1944564'),  # example
     ]
     """
-    pass
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    full_path = os.path.join(base_path, html_file)
+    with open(full_path, 'r') as f:
+        content = f.read()
+        soup = BeautifulSoup(content,'html.parser')
+
+    # file = open(html_file, "r")
+    # r = file.read()
+    # soup = BeautifulSoup(r.content, "html.parser")
+    # file.close()
+    #the contents of page stored as soup 
+
+    #title = soup.find_all('div', attrs = {'class':'t1jojoys dir dir-ltr'})
+
+    titles = soup.find_all('div', class_="t1jojoys dir dir-ltr")
+    #gives a list of tags that were searching for 
+    #something that will be the same for all 20 searches
+    costs= soup.find_all('span', class_="_tyxjp1")
+    #list of the costs 
+
+
+    position = 0
+    L = []
+    #L is list of tuples 
+    for item in titles: 
+        title=titles[position].text
+        cost= int(costs[position].text.lstrip("$"))
+        #strip left $ 
+        id= titles[position]["id"].lstrip("title_")
+        t = (title,cost,id)
+        L.append(t)
+        position += 1 
+        # print(t)
+    return L
+    
+        
 
 
 def get_listing_information(listing_id):
@@ -45,14 +80,53 @@ def get_listing_information(listing_id):
                 "Shared Room": the listing subtitle has the word "shared" in it
                 "Entire Room": the listing subtitle has neither the word "private" nor "shared" in it
         int - Number of bedrooms
-.
+.                                                                                                                                                                                                           
     (
         policy number,
         place type,
         number of bedrooms
     )
     """
-    pass
+    # html_file = 'html_files/listing_" + listing_id + ".html'
+    # file = open(html_file, "r")
+    # r = file.read()
+    # soup = BeautifulSoup(r.content, "html.parser")
+    # file.close()
+    source_dir = os.path.dirname(__file__)
+    full_path = os.path.join(source_dir, f"html_files/listing_{listing_id}.html")
+    f=  open(full_path, 'r')
+    r = f.read()
+    f.close()
+    soup = BeautifulSoup(r, "html.parser")
+
+    policy_number = soup.find_all("li", class_ = "f19phm7j dir dir-ltr")[0].text
+    if "pending" in policy_number.lower():
+        policy_number = "Pending"
+#making the search lowercase to be able to catch everything
+    elif "exempt" in policy_number.lower():
+        policy_number = "Exempt"
+    else: 
+        policy_number = policy_number.lstrip('policy_number: ')
+    
+    type_of_stay = soup.find_all("h2", class_ = "_14i3z6h")[0].text
+    #getting first information thats in the list 
+    if "private" in type_of_stay.lower():
+        type_of_stay = "Private Room" 
+    elif "shared" in type_of_stay.lower():
+        type_of_stay = "Shared Room"
+    else:
+        type_of_stay = "Entire Room"
+    
+    number_rooms =  soup.find_all("li", class_ = "l7n4lsf dir dir-ltr")[1]
+    #get the second item in the list 
+    number_bedrooms = number_rooms.find_all("span")[2].text
+    # the 3rd index gives the number of bedrooms
+    if "studio" in number_bedrooms.lower(): 
+        number_bedrooms = 1
+    else: 
+        number_bedrooms = int(number_bedrooms.split(" ")[0])
+        #string will now be list, getting first index which is the number that need to be an int
+    return (policy_number, type_of_stay, number_bedrooms)
 
 
 def get_detailed_listing_database(html_file):
@@ -69,7 +143,17 @@ def get_detailed_listing_database(html_file):
         ...
     ]
     """
-    pass
+    get_listing= get_listings_from_search_results(html_file)
+    listings_list= []
+    for listing in get_listing: 
+        # print (listing)
+        listing_info = get_listing_information(listing[2])
+        #calling the listing id index 
+        listings_list.append(listing + listing_info)
+    return listings_list
+        
+
+
 
 
 def write_csv(data, filename):
@@ -94,7 +178,16 @@ def write_csv(data, filename):
 
     This function should not return anything.
     """
-    pass
+
+
+    sorted_list = sorted(data, key =lambda c: c[1])
+    #indexing to the cost and sorting in ascending order 
+    with open(filename,'w') as out:
+        csv_out=csv.writer(out)
+        csv_out.writerow(['Listing Title','Cost','Listing ID', 'Policy Number', 'Place Type', 'Number of Bedrooms'])
+        for row in sorted_list:
+            csv_out.writerow(row)
+            #open and write a csv file, create columns, and add sorted_list
 
 
 def check_policy_numbers(data):
@@ -116,7 +209,17 @@ def check_policy_numbers(data):
     ]
 
     """
-    pass
+    wrong_listing_id = []
+    for listing in data: 
+        print(listing)
+        if listing[3] != "Pending" and listing[3] != "Exempt":
+            if (re.match(r"STR-000[0-9]{4}", listing[3]) == None) and (re.match(r"20[0-9]{2}-00[0-9]{4}STR", listing[3]) == None):
+                wrong_listing_id.append(listing[2])
+                #goes through list of strings and return only if it matches
+    return wrong_listing_id
+
+
+
 
 
 def extra_credit(listing_id):
@@ -133,7 +236,26 @@ def extra_credit(listing_id):
     gone over their 90 day limit, else return True, indicating the lister has
     never gone over their limit.
     """
-    pass
+    
+    filename = ("html_files/listing_" + listing_id + "_reviews.html")
+    with open(filename, 'r') as f:
+        content = f.read()
+        soup = BeautifulSoup(content, 'html.parser')
+
+        reviews = soup.find_all('li', class_='_1f1oir5')
+
+        #count each year and add number of reviews to a dictionary
+        count_dic = {}
+        for i in reviews: 
+            if i.text[-4:] in count_dic: 
+                count_dic[i.text[-4:]] += 1
+            else: 
+                count_dic[i.text[-4:]] = 1
+        #run through the values in dic and see if one is greater than 90
+        for year in count_dic.items():
+            if year[1] > 90:
+                return False 
+        return True
 
 
 class TestCases(unittest.TestCase):
